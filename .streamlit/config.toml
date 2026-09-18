@@ -7,8 +7,12 @@ textColor = "#fafafa"
 font = "sans serif"
 
 [server]
-headless = false
+headless = true
 runOnSave = true
 
 [browser]
 gatherUsageStats = false
+
+[client]
+toolbarMode = "minimal"
+showErrorDetails = true

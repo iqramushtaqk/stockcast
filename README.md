@@ -1,103 +1,107 @@
-# 📈 StockCast
+# StockCast
 
-**StockCast** is an interactive stock price forecasting dashboard built with [Streamlit](https://streamlit.io/) and [Facebook Prophet](https://facebook.github.io/prophet/). It pulls historical price data for any publicly traded company, fits a time-series forecasting model, and visualizes future price trends with confidence intervals — all in a clean, dark-themed interface.
+**StockCast** is an interactive stock price forecasting dashboard built with [Streamlit](https://streamlit.io/). It pulls historical prices for a public company, fits a lightweight additive time-series model (trend plus weekly and yearly seasonality), and charts the forecast with uncertainty intervals.
 
-Whether you type a ticker symbol like `AAPL` or just the company name like `apple`, StockCast automatically resolves it, fetches the data, and generates a forecast in seconds.
+Type a ticker such as `AAPL` or a company name such as `apple`. StockCast resolves the symbol, fetches history from Yahoo Finance, and produces a forecast in seconds.
 
-**🔗 Live demo:** *[link coming soon]*
+**GitHub:** [https://github.com/iqramushtaqk/stockcast](https://github.com/iqramushtaqk/stockcast)
 
-![Python](https://img.shields.io/badge/Python-3.10+-blue)
+![Python](https://img.shields.io/badge/Python-3.11-blue)
 ![Streamlit](https://img.shields.io/badge/Streamlit-1.38-red)
-![Prophet](https://img.shields.io/badge/Model-Facebook%20Prophet-green)
 
 ---
 
 ## What It Does
 
-StockCast takes historical stock data and forecasts future prices using an additive time-series model. It's built to make forecasting approachable — no need to know exact ticker symbols, tune any parameters, or write a single line of code.
+1. Pulls historical closing prices from Yahoo Finance (with a public chart API fallback)
+2. Fits an additive model: linear trend + weekly Fourier terms + yearly Fourier terms
+3. Projects prices forward for a chosen number of days, with 95% residual intervals
+4. Backtests on the last 30 days and reports RMSE
+5. Renders interactive Plotly charts you can explore
 
-Under the hood, the app:
-
-1. Pulls historical closing prices from Yahoo Finance
-2. Fits a Prophet model to learn trend, weekly, and yearly seasonality
-3. Projects prices forward for a chosen number of days
-4. Backtests the model on the last 30 days to report accuracy (RMSE/MAE)
-5. Renders everything as interactive charts you can explore
+Forecasts are for educational and portfolio use only — this is not financial advice.
 
 ## Features
 
-- 🔎 **Smart ticker resolution** — type a company name (`apple`, `tesla`) or a ticker (`AAPL`, `TSLA`) and it figures out the rest
-- 🔮 **Configurable forecasts** — project anywhere from 7 to 365 days into the future
-- 📅 **Adjustable history window** — train on 1 to 10 years of past data
-- 📊 **Confidence intervals** — see the range of likely outcomes, not just a single prediction line
-- 🧩 **Trend & seasonality breakdown** — visualize what the model learned about long-term trend and yearly patterns
-- ✅ **Backtested accuracy** — RMSE and MAE reported on a rolling 30-day holdout, so you know how reliable the forecast is
-- ⬇️ **CSV export** — download the full forecast (dates, predicted price, upper/lower bounds) for your own analysis
+- **Smart ticker resolution** — company name (`apple`, `tesla`) or ticker (`AAPL`, `TSLA`)
+- **Configurable forecasts** — 7 to 365 days ahead
+- **Adjustable history** — train on 1 to 10 years of past data
+- **Confidence intervals** — likely range around the point forecast
+- **Trend & seasonality** — what the model learned about long-term trend and yearly patterns
+- **Backtested accuracy** — RMSE on a rolling 30-day holdout
+- **CSV export** — dates, predicted price, upper/lower bounds
 
 ## Tech Stack
 
 | Layer | Tool |
 |---|---|
-| UI / App framework | [Streamlit](https://streamlit.io/) |
-| Market data | [yfinance](https://github.com/ranaroussi/yfinance) (Yahoo Finance) |
-| Forecasting model | [Facebook Prophet](https://facebook.github.io/prophet/) |
-| Charts | [Plotly](https://plotly.com/python/) |
+| UI | Streamlit |
+| Market data | yfinance, Yahoo Finance chart API fallback |
+| Forecasting | NumPy least squares (additive seasonal model) |
+| Charts | Plotly |
+
+The model does **not** use Facebook Prophet or Stan, so Streamlit Community Cloud does not need a C++ compiler.
 
 ---
 
 ## How to Use
 
-1. Open the app (locally or via the live demo link above)
-2. In the sidebar, type a **ticker symbol or company name** (e.g. `AAPL`, `apple`, `tesla`)
-3. Adjust the sliders:
-   - **Years of history** — how much past data to train on
-   - **Days to forecast** — how far into the future to project
-4. Toggle **Show trend & seasonality** if you want the breakdown charts
-5. Click **🚀 Run Forecast**
-6. Explore the results:
-   - Metric cards for last close price, forecasted price, projected % change, and backtest accuracy
-   - An interactive chart showing historical prices, the forecast, and the confidence interval
-   - Optional trend and seasonality charts
-7. Click **⬇️ Download forecast as CSV** to save the results
-
-> **Note:** Forecasts are for educational and portfolio purposes only — this is not financial advice.
+1. Open the app locally or on Streamlit Community Cloud
+2. In the sidebar, type a ticker or company name
+3. Set **Years of history** and **Days to forecast**
+4. Optionally keep **Show trend & seasonality** on
+5. Click **Run Forecast**
+6. Download the forecast CSV if you want the numbers
 
 ---
 
 ## Run Locally
 
-**Requirements:** Python 3.10+
+**Requirements:** Python 3.11
 
 ```bash
-# clone the repo
-git clone <your-repo-url>
+git clone https://github.com/iqramushtaqk/stockcast.git
 cd stockcast
 
-# install dependencies
-pip install -r requirements.txt
+python -m venv .venv
+# Windows: .venv\Scripts\activate
+# macOS/Linux: source .venv/bin/activate
 
-# run the app
+pip install -r requirements.txt
 streamlit run app.py
 ```
 
-The app will open automatically in your browser at `http://localhost:8501`.
+The app opens at `http://localhost:8501`.
+
+## Deploy on Streamlit Community Cloud
+
+This repo is set up for a clean Cloud deploy (Python 3.11, no Prophet/cmdstan).
+
+1. Push this repository to GitHub (already at [iqramushtaqk/stockcast](https://github.com/iqramushtaqk/stockcast))
+2. Go to [share.streamlit.io](https://share.streamlit.io) and sign in with GitHub
+3. **Create app** → select this repo, branch `main`, main file `app.py`
+4. Deploy. Streamlit reads `runtime.txt` and `requirements.txt` automatically
+
+No extra apt packages, secrets, or environment variables are required.
 
 ## Project Structure
 
 ```
 stockcast/
-├── app.py                  # entire app — UI, data fetch, model, charts
-├── requirements.txt        # Python dependencies
+├── app.py                  # UI, data fetch, model, charts
+├── requirements.txt        # Python dependencies (Cloud-safe)
+├── runtime.txt             # python-3.11 for Streamlit Cloud
+├── .streamlit/config.toml  # dark theme, minimal toolbar
 ├── .gitignore
 └── README.md
 ```
 
 ## Notes
 
-- First run may take a few extra seconds while Prophet's backend compiles.
-- The app caches fetched data for an hour to avoid redundant API calls.
-- Model results depend on data availability from Yahoo Finance and are not guaranteed to be accurate predictors of future prices.
+- Fetched prices are cached for one hour.
+- If `yfinance` is blocked, the app falls back to Yahoo’s public chart endpoint.
+- Results depend on Yahoo Finance availability and are not guaranteed predictors of future prices.
 
 ---
 
-Built as a compact, single-file portfolio project — the entire pipeline (fetch → model → visualize → export) lives in one readable `app.py`.
+Built as a compact Streamlit portfolio project: fetch → model → visualize → export in one `app.py`.
